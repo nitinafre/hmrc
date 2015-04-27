@@ -1,9 +1,11 @@
 package com.hmrc.domain;
 
+import java.io.Serializable;
+
 /**
  * Created by nitinafre on 27/04/2015.
  */
-public class Product {
+public class Product implements Serializable{
 
 	private Integer id;
 	private String name;

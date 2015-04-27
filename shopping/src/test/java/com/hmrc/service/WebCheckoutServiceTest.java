@@ -4,7 +4,9 @@ import com.hmrc.domain.Product;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,35 +30,59 @@ public class WebCheckoutServiceTest {
 
 	@Test (expected = IllegalArgumentException.class)
 	public void testWithBlankBasket() {
-		List<Product> blankBasket = new ArrayList<Product>();
+		Map<Product, Integer> blankBasket = new HashMap<Product, Integer>();
 		objectToTest.checkout(blankBasket);
 	}
 
 	@Test
 	public void testSingleProductInBasket() {
-		List<Product> basket = new ArrayList<Product>();
-		basket.add(p1);
+		Map<Product, Integer> basket = new HashMap<Product, Integer>();
+		basket.put(p1, 1);
 		assertEquals("The checkout calculation is flawed", new Double(10.0), objectToTest.checkout(basket));
 	}
 
+	/* This test can be changed if discounts are taken from the rules engine and more generic test cases can be added to verify the list of items. Apart from that the calculations can be verified using BDD*/
 	@Test
 	public void testMultipleSameProduct() {
-		List<Product> basket = new ArrayList<Product>();
-		basket.add(p1);
-		basket.add(p1);
-		basket.add(p1);
-		basket.add(p1);
-		assertEquals("The checkout calculation is flawed", new Double(40.0), objectToTest.checkout(basket));
+		Map<Product, Integer> basket = new HashMap<Product, Integer>();
+		basket.put(p3, 4);
+		assertEquals("The checkout calculation is flawed", new Double(120.0), objectToTest.checkout(basket));
 	}
 
 	@Test
 	public void testMultipleProducts() {
-		List<Product> basket = new ArrayList<Product>();
-		basket.add(p1);
-		basket.add(p2);
-		basket.add(p3);
-		basket.add(p4);
-		assertEquals("The checkout calculation is flawed", new Double(100.0), objectToTest.checkout(basket));
+		Map<Product, Integer> basket = new HashMap<Product, Integer>();
+		basket.put(p1, 1);
+		basket.put(p2, 2);
+		basket.put(p3, 3);
+		basket.put(p4, 4);
+		assertEquals("The checkout calculation is flawed", new Double(300.0), objectToTest.checkout(basket));
+	}
+
+	@Test
+	public void testMultipleSameProductWithOrangeDiscounts() {
+		Map<Product, Integer> basket = new HashMap<Product, Integer>();
+		basket.put(p2, 4);
+		assertEquals("The checkout calculation is flawed and orange discount is not considered", new Double(60.0), objectToTest.checkout(basket));
+		basket.clear();
+		basket.put(p2, 3);
+		assertEquals("The checkout calculation is flawed and orange discount is not considered", new Double(40.0), objectToTest.checkout(basket));
+		basket.clear();
+		basket.put(p2, 5);
+		assertEquals("The checkout calculation is flawed and orange discount is not considered", new Double(80.0), objectToTest.checkout(basket));
+		basket.clear();
+		basket.put(p2, 6);
+		assertEquals("The checkout calculation is flawed and orange discount is not considered", new Double(80.0), objectToTest.checkout(basket));
+		basket.clear();
+		basket.put(p2, 6000000);
+		assertEquals("The checkout calculation is flawed and orange discount is not considered", new Double(80000000.0), objectToTest.checkout(basket));
+	}
+
+	@Test
+	public void testMultipleApplesWithDiscounts() {
+		Map<Product, Integer> basket = new HashMap<Product, Integer>();
+		basket.put(p1, 4);
+		assertEquals("The checkout calculation is flawed and apple discount is not considered", new Double(20.0), objectToTest.checkout(basket));
 	}
 
 }
